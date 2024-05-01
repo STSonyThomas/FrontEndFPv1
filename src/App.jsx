@@ -16,16 +16,12 @@ const App = () => {
   };
   return (
       <div>
-          <h1>React Media Recorder</h1>
-          <div className="button-flex">
-              <button onClick={toggleRecordOption("video")}>
-                Record Video
-              </button>
-          </div>
+          <h1>Interview Trainer</h1>
           <div>
               {recordOption === "video" ? <VideoRecorder /> : null}
           </div>
           <div className='list_of_videos'>
+            <h2>Videos List</h2>
             <ListVideo/>
           </div>
       </div>

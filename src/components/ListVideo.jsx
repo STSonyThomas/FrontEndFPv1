@@ -24,12 +24,9 @@ const ListVideo = ()=>{
             {videoList.map((url)=>{
                 return(
                     <>
-                    <video key={url} controls>
+                    <video key={url} width="240" control className="video__list__interview">
                         <source src={url} type="video/webm"/>
                     </video>
-                    <p key = {url}>
-                        {url}
-                    </p>
                     </>
                 )
             })}

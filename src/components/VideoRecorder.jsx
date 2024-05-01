@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import {ref, uploadBytes} from 'firebase/storage';
 import { storage } from "../firebase";
 import { v4 } from "uuid";
+import axios from "axios";
 
 const mimeType = "video/webm";
 
@@ -13,7 +14,39 @@ const VideoRecorder = () => {
     const [stream, setStream] = useState(null);
     const [videoChunks, setVideoChunks] = useState([]);
     const [recordedVideo, setRecordedVideo] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [posts, setPosts] = useState(null);
 
+    // useEffect(() => {
+    //     const loadPosts = async () => {
+    //       setLoading(true);
+    //       try {
+    //         const response = await axios.get('http://localhost:5000/download-video/InterviewVideo704775c4-ca28-48cb-bc24-06f3b54c688d');
+    //         setPosts(response.data);
+    //         console.log(posts);
+    //       } catch (error) {
+    //         console.error('Error fetching data:', error);
+    //       }
+    //       setLoading(false);
+    //     };
+    
+    //     loadPosts();
+    //   }, []);
+    const analyzeScore =  async ()=>{
+        setLoading(true);
+        axios.get("http://localhost:5000/download-video/InterviewVideo704775c4-ca28-48cb-bc24-06f3b54c688d")
+        .then(response => {
+          const data = response.data;
+          // Access data from the JSON object
+          const distractionScore = data.DistractionScore;
+          // ... use the data in your front-end logic
+          setPosts(distractionScore);
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
+        });
+              setLoading(false);
+    }
     const getCameraPermission = async () => {
         setRecordedVideo(null);
         if ("MediaRecorder" in window) {
@@ -113,6 +146,22 @@ const VideoRecorder = () => {
 					</div>
 				) : null}
 			</div>
+            <div>
+            {recordedVideo && !posts? (
+					<div className="recorded-player">
+						<button onClick={analyzeScore} type="button">
+                        Analyze    
+                        </ button>
+					</div>
+				) : (
+                    <div className="recorded-player">
+                        <p>You are distracted {posts} of the time</p>
+                        <p>You are smiling {posts} of the time</p>
+                        <p>Filler Words:</p>
+                        <p>Relevance to answers:</p>
+                    </div>
+                )}
+            </div>
 		</div>
 	);
 };
