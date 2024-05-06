@@ -16,6 +16,7 @@ const VideoRecorder = () => {
     const [recordedVideo, setRecordedVideo] = useState(null);
     const [loading, setLoading] = useState(false);
     const [posts, setPosts] = useState(null);
+    const [audioRes,setAudioRes]=useState(null);
 
     // useEffect(() => {
     //     const loadPosts = async () => {
@@ -34,18 +35,36 @@ const VideoRecorder = () => {
     //   }, []);
     const analyzeScore =  async ()=>{
         setLoading(true);
-        axios.get("http://localhost:5000/download-video/InterviewVideo704775c4-ca28-48cb-bc24-06f3b54c688d")
+        axios.get("http://localhost:5000/download-video/InterviewVideo")
         .then(response => {
           const data = response.data;
           // Access data from the JSON object
-          const distractionScore = data.DistractionScore;
+          const distractionScore = data;
           // ... use the data in your front-end logic
-          setPosts(distractionScore);
+          setPosts(data);
+        //   alert(data.SmileScore);
         })
         .catch(error => {
           console.error('Error fetching data:', error);
         });
-              setLoading(false);
+        // Get Audio Score
+        
+        setLoading(false);
+
+    }
+    const analyzeAudio = async () =>{
+        axios.get("http://localhost:5000/extracter-audio")
+        .then(response => {
+          const dataAud = response.data;
+          // Access data from the JSON object
+          const audioScore = dataAud;
+          // ... use the data in your front-end logic
+          setAudioRes(dataAud);
+          alert(audioScore.FillerScore);
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
+        });
     }
     const getCameraPermission = async () => {
         setRecordedVideo(null);
@@ -103,7 +122,7 @@ const VideoRecorder = () => {
             const videoUrl = URL.createObjectURL(videoBlob);
             setRecordedVideo(videoUrl);
             setVideoChunks([]);
-            const videoRef = ref(storage,`videos/${"InterviewVideo"+v4()}`);
+            const videoRef = ref(storage,`videos/${"InterviewVideo"}`);
             uploadBytes(videoRef,videoBlob).then(()=>{
                 alert("Video Uploaded Successfully for analysis pls wait while being anaylsed.")
             })
@@ -147,20 +166,26 @@ const VideoRecorder = () => {
 				) : null}
 			</div>
             <div>
-            {recordedVideo && !posts? (
-					<div className="recorded-player">
-						<button onClick={analyzeScore} type="button">
-                        Analyze    
-                        </ button>
-					</div>
-				) : (
+                <div className="recorded-player">
+                            <button onClick={analyzeScore} type="button">
+                            Analyze Video   
+                            </ button>
+                </div>
+                <div className="recorded-player">
+                    <button onClick={analyzeAudio} type="button">
+                        Analyze Audio
+                    </button>
+                </div>
+                {posts && audioRes? (
                     <div className="recorded-player">
-                        <p>You are distracted {posts} of the time</p>
-                        <p>You are smiling {posts} of the time</p>
-                        <p>Filler Words:</p>
-                        <p>Relevance to answers:</p>
+                        <p>Distraction: {posts.DistractionScore} % </p>
+                        <p>Interest:    {posts.EyeScore} %</p>
+                        <p>Smile        {posts.SmileScore} %</p>
+                        <p>Filler Words: {audioRes.FillerScore}</p>
+                        <p>Relevance:     {audioRes.ResponseScore}</p>
                     </div>
-                )}
+                ):null}
+           
             </div>
 		</div>
 	);
